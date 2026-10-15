@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Installation and troubleshooting
+    url: https://github.com/felixchenfy/WebContentAgent/blob/main/docs/getting-started.md
+    about: Start here for client setup, PDFs and common errors.
+  - name: Security reporting
+    url: https://github.com/felixchenfy/WebContentAgent/blob/main/SECURITY.md
+    about: Request a private reporting route before sharing vulnerability details.

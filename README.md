@@ -1,92 +1,171 @@
 # WebContentAgent
 
-Connect coding agents such as **Codex and Claude Code to ChatGPT through your
-signed-in Chrome browser**. Send a question or PDF, retrieve the corresponding
-reply, and continue the same conversation through MCP (Model Context Protocol).
+**Let Codex and Claude Code work with ChatGPT: share project updates, get fresh
+ideas, and keep a conversation you can return to for progress summaries.**
 
-The project also provides local-model web extraction and supervised browser
-workflows. This is a **Windows-first developer preview**. Codex has historical
-live-use evidence; Claude Code can use the standard Python MCP interface, but
-client-specific live acceptance is still pending.
+WebContentAgent connects your coding agent to ChatGPT in your signed-in Chrome
+browser through MCP (Model Context Protocol). Send prompts or PDFs, retrieve
+replies, and continue the same conversation without manually copying everything
+between applications.
 
-## What it does
+> [!NOTE]
+> **AI-generated project:** this project's code was generated with **OpenAI Codex
+> and Claude Code**, under human direction. It is a practical experiment, not a
+> polished reference implementation for line-by-line study. Start with the guides
+> below rather than trying to learn the project by reading every generated file.
+> Review the permissions and test the behavior you depend on. Contributions and
+> improvements are very welcome.
 
-| Capability | Result |
-| --- | --- |
-| ChatGPT bridge | Questions, optional PDF attachments, conversation continuation and verified reply extraction |
-| Recovery | Durable submission records, duplicate-send protection and bounded read-only recovery |
-| Web collection | News/article selection, in-scope course traversal, images and cleaned Markdown |
-| Local inference | LM Studio handles semantic decisions; Python owns traversal, storage and validation |
-| Durable jobs | Checkpoints, resume, raw evidence, manifests and failure diagnostics |
-| Optional daily assistant | Signed-in Chrome actions with an explicit review and one-use submission permit |
+[Install](docs/getting-started.md) · [Usage & project updates](docs/workflows.md) ·
+[Contribute](CONTRIBUTING.md) · [Privacy](docs/privacy.md) · [MIT license](LICENSE)
 
-## Start here
+**Status:** Windows-first developer preview, currently in a private repository.
+Access is required until it is made public. Codex has historical live-use
+evidence. Claude Code setup is documented through standard MCP; a live
+Claude Code round trip remains to be validated.
 
-Requirements: Windows, Python 3.12 (managed by uv), uv, and Chrome for the bridge.
-Node.js is needed for JavaScript tests. LM Studio is needed only for local-model
-collection and the optional model-assisted workflow, not for the ChatGPT bridge.
+## Why use it?
+
+Coding agents see the implementation details. You may prefer to discuss the
+bigger picture in ChatGPT. This bridge helps keep those two conversations connected.
+
+- **Keep ChatGPT informed.** Have Codex or Claude Code report completed work,
+  tests, blockers and next steps. With a separately configured scheduler, these
+  updates can happen periodically while your project develops.
+- **Get another perspective.** Ask ChatGPT to challenge a design, suggest an
+  experiment or identify a missing assumption, then bring its feedback back to
+  the coding agent for evaluation.
+- **Catch up quickly.** Open the saved ChatGPT conversation and ask what changed,
+  which decisions were made and what still needs attention. You do not need to
+  reconstruct progress from several coding-agent chats.
+- **Review documents in context.** Send an approved PDF and follow up in the same
+  conversation when the design or report changes.
+
+ChatGPT only knows what you send it. Its summaries may be incomplete or wrong;
+repository state and test results remain the evidence. Periodic reporting requires
+your coding client or an external scheduler: **this bridge does not install a timer
+or send updates on its own.**
+
+## A typical workflow
+
+```text
+Codex / Claude Code works on your project
+                  |
+       sends an approved progress report
+                  v
+WebContentAgent -> your signed-in ChatGPT conversation
+                  |
+       returns feedback and new ideas
+                  v
+Coding agent evaluates the suggestions; you review the conversation anytime
+```
+
+For example, tell your coding agent:
+
+```text
+Use WebContentAgent to ask ChatGPT for a second opinion on this project.
+Summarize our goal, completed changes, tests, blockers and next steps.
+Ask for alternative approaches and the most useful next experiment.
+Use thinking_mode="current" and save the returned conversation URL privately
+so future project updates can continue the same conversation.
+Return the feedback and explain which suggestions you would adopt and why.
+```
+
+See [ready-to-use workflow prompts](docs/workflows.md) for scheduled reporting,
+PDF review, follow-ups and progress summaries.
+
+## Quick start
+
+You need **Windows, Git, uv, Chrome, a signed-in ChatGPT account, and an MCP-capable
+coding client**. uv manages Python 3.12. The bridge needs neither LM Studio nor an
+OpenAI API key; access to ChatGPT is through your existing account and its limits.
+
+### 1. Install and pair
 
 ```powershell
 git clone https://github.com/felixchenfy/WebContentAgent.git
 cd WebContentAgent
 uv sync --python 3.12 --frozen
-uv run playwright install chromium
 uv run python -m web_content_agent.chatgpt_pairing
 ```
 
-Load `chrome_extension/` as an unpacked extension in Chrome, sign in to ChatGPT
-yourself, then register the Python MCP server in your coding client. Follow
-[Getting started](docs/getting-started.md) for the MCP command, PDF allowlist,
-and collection example. The repository is initially private; cloning requires
-access. No separate Node adapter repository is required for the direct Python
-MCP route. Existing personal plugin installations may continue using their adapter.
+In Chrome, open `chrome://extensions`, enable **Developer mode**, choose
+**Load unpacked**, and select this checkout's `chrome_extension` folder.
+Open ChatGPT and sign in normally. Generated pairing files stay on your machine.
 
-## How it works
+### 2. Connect your coding client
+
+Register this local stdio MCP command, replacing the example with your absolute path:
 
 ```text
-Codex / Claude Code -> Python MCP -> local bridge -> Chrome Companion -> ChatGPT
-                                      |
-                               private task records
-
-CLI / MCP -> collection worker -> Playwright + local LM Studio
-                     |
-              raw / cleaned / checkpoints
+uv --directory C:/path/to/WebContentAgent run wca-mcp
 ```
 
-The bridge uses the signed-in ChatGPT website, not an OpenAI API key. Questions
-and PDFs sent through it leave the machine and go to ChatGPT. Local-model
-collection sends inference requests only to localhost. These are separate paths.
+Follow the client-specific instructions for [Codex](docs/getting-started.md#codex)
+or [Claude Code](docs/getting-started.md#claude-code). They include timeouts and
+configuration verification. No separate Node adapter repository is required.
 
-## Reliability and scope
+### 3. Try a small question
 
-A failed confirmation does not prove that a message was never sent. Inspect the
-durable state and recover the existing reply; do not resend an ambiguous request.
-Verified extraction checks message ownership and completion, not factual accuracy.
-Website changes can still require maintenance. Historical PDF trials are not an
-exactly-once delivery guarantee or a current-version benchmark.
-
-The extension requests `debugger`, `scripting`, `storage`, `tabs`, and `alarms`
-permissions, with hosts limited to ChatGPT, the optional forum/search workflow,
-and two loopback endpoints. See [privacy and permissions](docs/privacy.md).
-
-## Development
-
-```powershell
-# Offline checks; no ChatGPT submission or LM Studio model loading
-$env:PYTEST_ADDOPTS = '-m "not live and not lmstudio"'
-.\scripts\test.ps1
+```text
+Use ask_chatgpt to ask: "Reply with BRIDGE_OK."
+Set thinking_mode to "current". Return the reply and conversation URL.
 ```
 
-See [CONTRIBUTING](CONTRIBUTING.md), [design](docs/design.md), and
-[release notes](docs/release-notes.md). Legacy model/desktop launchers remain
-advanced opt-in tools: some adjust LM Studio preferences and load a pinned model.
-The quickstart does not run them or install a schedule.
+A successful result returns the matching reply and a canonical conversation URL.
+Tool discovery alone does not prove that sending and reading work. For PDF
+uploads, first configure the [private upload allowlist](docs/getting-started.md#pdf-uploads).
 
-## Articles
+## Other capabilities
 
-- [Codex-to-ChatGPT bridge](https://feiyuchen-blog.pages.dev/blog/codex-talks-to-chatgpt-through-a-local-agent/)
-- [Local web extraction](https://feiyuchen-blog.pages.dev/blog/local-llm-web-agent/)
-- [Supervised daily browser tasks](https://feiyuchen-blog.pages.dev/blog/signed-in-chrome-daily-assistant/)
+| Capability | What it adds |
+| --- | --- |
+| Local-model web extraction | Use LM Studio to select and clean articles or traverse an in-scope course |
+| Durable collection jobs | Checkpoints, resume, raw evidence, images, cleaned Markdown and validation |
+| Browser workflow recovery | Durable submission records, duplicate-send protection and bounded read-only recovery |
+| Optional supervised daily assistant | Separate model advice, supervisor approval, one-use submission and website verification |
 
-MIT licensed. Model weights, downloaded content and third-party services are not
-included and retain their own terms.
+These are optional. Start with the ChatGPT bridge. Collection additionally needs
+LM Studio and Playwright Chromium; JavaScript development tests need Node.js.
+The [installation guide](docs/getting-started.md) explains those paths separately.
+
+## Reliability and privacy
+
+The bridge runs locally, but chosen questions and PDFs are sent to ChatGPT.
+Private task records and pairing tokens are excluded from Git. The extension has
+powerful browser permissions; read [privacy and permissions](docs/privacy.md).
+
+A timeout or failed confirmation is not proof that nothing was sent. Do not
+blindly resend. Recovery must identify the original request and conversation.
+Verified reply extraction is not a guarantee that the answer is correct.
+Website changes, login expiry and usage limits can interrupt workflows.
+
+This is an independent project, not an official OpenAI or Anthropic product.
+See [troubleshooting](docs/getting-started.md#troubleshooting),
+[security reporting](SECURITY.md) and [known limits](docs/roadmap.md).
+
+## Contributions welcome
+
+Bug reports, clearer documentation, synthetic regression fixtures, client setup
+reports and focused pull requests are all welcome. You do not need to rewrite
+the project to help. Good starting points include Claude Code validation, easier
+onboarding and reproductions of changed browser layouts.
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, checks and the PR workflow.
+AI-assisted contributions are welcome; contributors remain responsible for
+understanding and validating their changes. Please follow our
+[community guidelines](CODE_OF_CONDUCT.md).
+
+## Documentation
+
+- [Installation and troubleshooting](docs/getting-started.md)
+- [Project reports, second opinions and progress summaries](docs/workflows.md)
+- [Architecture and boundaries](docs/design.md)
+- [Roadmap and compatibility](docs/roadmap.md)
+- [Release notes](docs/release-notes.md)
+- Background: [bridge design](https://feiyuchen-blog.pages.dev/blog/codex-talks-to-chatgpt-through-a-local-agent/),
+  [local extraction](https://feiyuchen-blog.pages.dev/blog/local-llm-web-agent/),
+  [supervised browser tasks](https://feiyuchen-blog.pages.dev/blog/signed-in-chrome-daily-assistant/)
+
+Maintained by [Feiyu Chen](https://github.com/felixchenfy). Licensed under [MIT](LICENSE).
+Model weights, downloaded content and third-party services retain their own terms.

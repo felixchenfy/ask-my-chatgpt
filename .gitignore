@@ -28,3 +28,6 @@ docs/*
 !docs/design.md
 !docs/release-notes.md
 !docs/privacy.md
+!docs/workflows.md
+!docs/roadmap.md
+!docs/repository-guide.md
