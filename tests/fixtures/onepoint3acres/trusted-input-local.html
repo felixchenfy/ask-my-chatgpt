@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>WebContentAgent local input test</title>
+<style>
+body { font: 20px system-ui; padding: 40px; }
+button { font: inherit; padding: 20px; }
+#target { position: relative; width: 320px; }
+#cover { position: absolute; inset: 0; background: #ccc; z-index: 10; }
+</style>
+<h1>Local Chrome input test</h1>
+<p>This page does not send answers, access the forum, or call a model.</p>
+<div id="target"><button id="choice" type="button">Select test option</button><div id="cover" hidden>Covered</div></div>
+<p id="result">Unselected</p><button id="reset" type="button">Reset test</button>
+<button id="submit" type="button" disabled>Submit local test</button>
+<script>
+let clicks = 0;
+let trustedClicks = 0;
+let selected = false;
+let trustedSubmissions = 0;
+document.querySelector('#choice').addEventListener('click', event => {
+  clicks++;
+  if (event.isTrusted) { trustedClicks++; selected = true; }
+  document.querySelector('#submit').disabled = !selected;
+  document.querySelector('#result').textContent = `Selected: ${selected}; trusted clicks: ${trustedClicks}`;
+});
+document.querySelector('#reset').addEventListener('click', () => {
+  clicks = 0; trustedClicks = 0; selected = false; trustedSubmissions = 0;
+  document.querySelector('#submit').disabled = true;
+  document.querySelector('#result').textContent = 'Unselected';
+});
+document.querySelector('#submit').addEventListener('click', event => {
+  if (event.isTrusted && selected) trustedSubmissions++;
+  document.querySelector('#result').textContent = `Local result verified; submissions: ${trustedSubmissions}`;
+});
+window.inputFixtureState = () => ({ clicks, trustedClicks, selected, trustedSubmissions,
+  visibility: document.visibilityState, focused: document.hasFocus(),
+  active: document.activeElement?.id || document.activeElement?.tagName,
+  traceInstalled: Boolean(window.__wcaTrustedActivationState) });
+</script></html>

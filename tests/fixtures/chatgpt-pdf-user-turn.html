@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- Reduced from the observed 2026-09-02 ChatGPT DOM. Keep the meaningful
+     attachment/body/toggle hierarchy; omit icons, generated IDs and styling. -->
+<html><body>
+<div data-message-author-role="user" data-message-id="old-user">
+  <div class="whitespace-pre-wrap">Previous question.</div>
+</div>
+<div data-message-author-role="user" data-message-id="pdf-user">
+  <div class="flex w-full flex-col gap-1">
+    <div class="flex gap-2 flex-wrap">
+      <div role="group" aria-label="bridge-unicode-10000-regression.pdf">
+        <button aria-label="bridge-unicode-10000-regression.pdf"></button>
+        <div class="truncate font-semibold">bridge-unicode-10000-regression.pdf</div>
+        <div class="truncate">PDF</div>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2"></div>
+    <div class="user-message-bubble-color">
+      <div data-testid="collapsible-user-message-root">
+        <div data-testid="collapsible-user-message-content">
+          <div class="whitespace-pre-wrap">Read bridge-unicode-10000-regression.pdf and return every line.</div>
+        </div>
+        <button data-testid="collapsible-user-message-toggle"><span>Show more</span><span>Show less</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+<form><textarea id="prompt-textarea"></textarea><button data-testid="send-button">Send</button></form>
+</body></html>

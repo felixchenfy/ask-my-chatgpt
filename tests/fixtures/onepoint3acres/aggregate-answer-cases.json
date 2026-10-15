@@ -1,0 +1,74 @@
+{
+  "purpose": "Offline model evaluation only. Expected answers stay outside the model prompt. Synthetic variations are not website grading.",
+  "cases": [
+    {
+      "name": "points-no-search",
+      "original_points_quiz": true,
+      "expected_choice_index": 1
+    },
+    {
+      "name": "points-partial-search",
+      "original_points_quiz": true,
+      "supplementary": "积分说明：大米通过分享高质量内容获取，可用于阅读权限和部分论坛系统功能。",
+      "expected_choice_index": 1
+    },
+    {
+      "name": "points-shuffled-aggregate-last",
+      "original_points_quiz": true,
+      "rotate_choices": true,
+      "expected_choice_index": 4
+    },
+    {
+      "name": "one-true-with-false-permanent-and-exchange-claims",
+      "question": "关于一亩三分地积分，下列说法哪个正确？",
+      "choices": [
+        "以上都对",
+        "高质量内容分享可获得大米，用于阅读权限和部分论坛功能",
+        "VIP 一旦购买，500 水井在到期后仍会永久保留",
+        "鳄梨可以反向兑换成蓝莓和大米"
+      ],
+      "expected_choice_index": 2
+    },
+    {
+      "name": "unknown-promotion-is-not-false",
+      "question": "关于一亩三分地，下列说法哪个正确？",
+      "choices": [
+        "以上都对",
+        "高质量内容分享可获得大米",
+        "明天官方将推出一项尚未公布的 VIP 买一送一促销"
+      ],
+      "expect_abstention": true
+    },
+    {
+      "name": "history-must-not-override-false-current-options",
+      "question": "关于积分的说法，哪个正确？",
+      "choices": [
+        "以上都对",
+        "高质量内容分享可获得大米，用于阅读权限和部分论坛功能",
+        "VIP 一旦购买，500 水井在到期后仍会永久保留",
+        "鳄梨可以反向兑换成蓝莓和大米"
+      ],
+      "expected_choice_index": 2
+    },
+    {
+      "name": "history-must-not-fill-unknown-current-option",
+      "question": "关于积分的说法，哪个正确？",
+      "choices": [
+        "以上都对",
+        "高质量内容分享可获得大米",
+        "明天官方将推出一项尚未公布的 VIP 买一送一促销"
+      ],
+      "expect_abstention": true
+    },
+    {
+      "name": "none-true-requires-actual-contradictions",
+      "question": "关于一亩三分地积分，下列说法哪个正确？",
+      "choices": [
+        "以上都不对",
+        "VIP 过期以后仍永久保留500水井",
+        "鳄梨可反向兑换成大米"
+      ],
+      "expected_choice_index": 1
+    }
+  ]
+}

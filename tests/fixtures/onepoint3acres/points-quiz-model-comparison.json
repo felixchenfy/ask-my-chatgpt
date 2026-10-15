@@ -1,0 +1,16 @@
+{
+  "quiz": {
+    "question": "关于积分的说法，哪个正确？",
+    "choices": [
+      {"index": 1, "text": "以上都对"},
+      {"index": 2, "text": "通过分享干货获得大米，也可以得到阅读权限+解锁系统功能。虽然需要花些时间，但参与社区分享也会很有收获。"},
+      {"index": 3, "text": "想使用系统功能最快的办法是购买蓝莓，然后兑换成鳄梨"},
+      {"index": 4, "text": "想获得阅读权限最快的办法是购买VIP 通行证"}
+    ],
+    "source_url": "https://www.1point3acres.com/next/daily-question"
+  },
+  "evidence": "来源：https://www.1point3acres.com/bbs/points.html （积分说明，2026-09-01读取，以下为人工摘要而非原始搜索片段）。高质量内容分享可以获得大米；大米用于阅读权限以及搜索、下载等功能，也能兑换鳄梨。付费购买蓝莓可以立即兑换鳄梨，解锁论坛系统功能，不必等待积累大米。购买VIP可在有效期获得500水井，立即提高阅读权限，无需等待攒分。",
+  "expected_choice_index": 1,
+  "label_basis": "Inferred from official points rules, not a live quiz grading result. Evaluator-only metadata: never send expected_choice_index to the model.",
+  "limitation": "Controlled single-question test. Curated evidence is not an exact replay of the earlier Google snippet, which was not saved."
+}

@@ -1,0 +1,11 @@
+title = "WebContentAgent secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Python event arguments are identifiers, not an API credential"
+condition = "AND"
+paths = ['''src[/\\]web_content_agent[/\\]worker\.py$''']
+regexTarget = "line"
+regexes = ['''^\s*"cleaned_images_repaired", article=article_key, count=repaired\s*$''']

@@ -1,0 +1,27 @@
+<!doctype html>
+<!-- Reduced from round-004's completed assistant DOM, observed 2026-09-03.
+     Inline file-citation buttons contain block paragraphs. Chromium innerText
+     inserts line breaks that are absent from the authored JSON string.
+     Private IDs and actual review content have been replaced. -->
+<html><head><style>
+  .citation { display: inline-flex; }
+  .citation button { display: flex; }
+  .citation p { margin: 0; }
+</style></head><body>
+<div data-message-author-role="user" data-message-id="fixture-user">
+  <div class="whitespace-pre-wrap">Review the new PDF as JSON.</div>
+</div>
+<article>
+<div data-message-author-role="assistant" data-message-id="fixture-reply">
+<div class="markdown"><p>{<br>
+"Q1": {<br>
+"answer": "A complete source-grounded answer.",<br>
+"pages": [7],<br>
+"reason": "The policy has inclusive bounds. <span data-content-reference-start="10" data-content-reference-end="20"><span class="citation" data-file-citation-group-identity="fixture" data-file-citation-group-size="1" data-file-citation-primary-file-id="fixture-file"><button type="button"><p class="not-prose">example-registration</p></button></span></span>"<br>
+}<br>
+}</p></div>
+</div>
+<button aria-label="Copy response">Copy</button>
+</article>
+<form><textarea id="prompt-textarea"></textarea><button aria-label="Start dictation">Dictate</button></form>
+</body></html>
