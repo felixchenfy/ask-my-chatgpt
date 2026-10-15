@@ -1,7 +1,7 @@
 # Architecture and module communication
 
 Python owns scope, traversal, file validation, retries, task state and persistence.
-The local model owns semantic choices. The ChatGPT route is a separate browser
+The local model owns semantic choices only in optional collection workflows. The ChatGPT route is a separate browser
 workflow: it does not call LM Studio and does transmit authorized content remotely.
 
 Collection discovers in-scope links, extracts source evidence, downloads assets,
@@ -48,7 +48,7 @@ sequenceDiagram
     X->>G: Prepare input and submit once
     X->>B: Report matching submitted message identity
     B->>R: Persist submission evidence
-    G-->>X: Assistant response in page
+    X->>G: Observe rendered reply for the original message
     X->>X: Check identity, completion and extraction
     X->>B: Return reply and evidence
     B->>R: Persist outcome

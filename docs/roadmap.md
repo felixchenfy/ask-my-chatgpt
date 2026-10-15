@@ -18,3 +18,7 @@ Historical blog results retain their original dates.
 
 Broad arbitrary browser control, credential export and bypassing access controls
 are outside this project's scope. No background reporting is enabled by default.
+
+Documentation checkpoint, October 15, 2026: 432 Python and 182 JavaScript offline
+tests passed, with six live/model tests excluded. These checks are not live
+end-to-end acceptance. Mermaid diagrams were rendered separately.

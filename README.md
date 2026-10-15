@@ -11,10 +11,8 @@ between applications.
 > [!NOTE]
 > **AI-generated project:** this project's code was generated with **OpenAI Codex
 > and Claude Code**, under human direction. It is a practical experiment, not a
-> polished reference implementation for line-by-line study. Start with the guides
-> below rather than trying to learn the project by reading every generated file.
-> Review the permissions and test the behavior you depend on. Contributions and
-> improvements are very welcome.
+> reference tutorial for line-by-line study. Start with the guides, review
+> permissions, and test the behavior you depend on. Contributions are welcome.
 
 [Install](docs/getting-started.md) · [Usage & project updates](docs/workflows.md) ·
 [Contribute](CONTRIBUTING.md) · [Privacy](docs/privacy.md) · [MIT license](LICENSE)
@@ -52,15 +50,18 @@ or send updates on its own.**
 flowchart LR
     S["Optional external scheduler"] -. "starts authorized reporting" .-> C["Codex / Claude Code"]
     C <-->|"MCP over stdio"| P["Python MCP server"]
-    P <--> B["Local ChatGPT bridge"]
+    subgraph PY["One local Python process"]
+        P -->|"Python call"| B["Local ChatGPT bridge"]
+    end
     B <--> R["Private task records"]
-    X["Chrome Companion"] <-->|"Paired loopback HTTP"| B
+    X["Chrome Companion"] -->|"HTTP poll and report"| B
+    B -->|"HTTP response"| X
     X <-->|"Browser interaction"| G["Signed-in ChatGPT"]
 ```
 
 The coding agent chooses the report; Python validates and records the request;
-Chrome Companion sends it and retrieves the matching reply. ChatGPT supplies the
-second opinion. The scheduler is optional and configured separately.
+Chrome Companion polls the paired loopback endpoint, operates the page, and
+retrieves the matching reply. ChatGPT supplies the second opinion.
 
 Tell your agent: **“Report our project progress to ChatGPT, ask for alternative
 approaches, and save the conversation URL privately for future updates.”**
