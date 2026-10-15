@@ -46,33 +46,28 @@ repository state and test results remain the evidence. Periodic reporting requir
 your coding client or an external scheduler: **this bridge does not install a timer
 or send updates on its own.**
 
-## A typical workflow
+## Architecture
 
-```text
-Codex / Claude Code works on your project
-                  |
-       sends an approved progress report
-                  v
-WebContentAgent -> your signed-in ChatGPT conversation
-                  |
-       returns feedback and new ideas
-                  v
-Coding agent evaluates the suggestions; you review the conversation anytime
+```mermaid
+flowchart LR
+    S["Optional external scheduler"] -. "starts authorized reporting" .-> C["Codex / Claude Code"]
+    C <-->|"MCP over stdio"| P["Python MCP server"]
+    P <--> B["Local ChatGPT bridge"]
+    B <--> R["Private task records"]
+    X["Chrome Companion"] <-->|"Paired loopback HTTP"| B
+    X <-->|"Browser interaction"| G["Signed-in ChatGPT"]
 ```
 
-For example, tell your coding agent:
+The coding agent chooses the report; Python validates and records the request;
+Chrome Companion sends it and retrieves the matching reply. ChatGPT supplies the
+second opinion. The scheduler is optional and configured separately.
 
-```text
-Use WebContentAgent to ask ChatGPT for a second opinion on this project.
-Summarize our goal, completed changes, tests, blockers and next steps.
-Ask for alternative approaches and the most useful next experiment.
-Use thinking_mode="current" and save the returned conversation URL privately
-so future project updates can continue the same conversation.
-Return the feedback and explain which suggestions you would adopt and why.
-```
+Tell your agent: **“Report our project progress to ChatGPT, ask for alternative
+approaches, and save the conversation URL privately for future updates.”**
 
-See [ready-to-use workflow prompts](docs/workflows.md) for scheduled reporting,
-PDF review, follow-ups and progress summaries.
+See [module communication and recovery](docs/design.md),
+[workflow prompts](docs/workflows.md), or the
+[architecture and debugging blog](https://feiyuchen-blog.pages.dev/blog/codex-talks-to-chatgpt-through-a-local-agent/#release-update).
 
 ## Quick start
 
