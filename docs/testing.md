@@ -92,7 +92,7 @@ checkpoint in [release-notes.md](release-notes.md).
 | `test_access_pacing.py`, `test_text_cleanup.py`, `test_monitor_script.py` | 4 | Request pacing, text cleanup, monitor script |
 | `tests/integration/test_static_pipeline.py`, `test_course_pipeline.py`, `test_resume_pipeline.py` | 4 | End-to-end pipelines against local fixtures with a fake model |
 
-### 1point3acres assistant
+### 1point3acres assistant (extra feature)
 
 | File | Cases | Covers |
 | --- | ---: | --- |

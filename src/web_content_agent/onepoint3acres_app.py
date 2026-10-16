@@ -1,3 +1,8 @@
+"""Extra feature: desktop app for the 1Point3Acres daily assistant.
+
+Not part of the ChatGPT bridge; see onepoint3acres/README.md.
+"""
+
 from __future__ import annotations
 
 import ctypes

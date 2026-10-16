@@ -10,6 +10,12 @@ agent with project discussion in ChatGPT. It then discloses AI-generated code,
 states compatibility, shows an example and provides the shortest installation path.
 Optional collection features follow the primary workflow.
 
+The repository has one core feature (the ChatGPT bridge and its Chrome Companion)
+and two independent tools. The 1point3acres assistant is labelled **Extra** in the
+README, its package README, the module docstrings, `scripts/README.md` and
+`chrome_extension/README.md`. Its import paths and command names stay unchanged so
+existing local automation keeps working.
+
 Long setup, troubleshooting and reporting recipes live in versioned `docs/` files
 with relative links. This keeps examples reviewable alongside code without adding
 a second documentation build or requiring readers to search incident journals.

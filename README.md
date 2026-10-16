@@ -45,8 +45,9 @@ OpenAI API key. Your account's normal limits apply.
 **The Chrome Companion is the foundation.** This unpacked extension is what
 types into the ChatGPT page, confirms the message was sent once and reads the
 reply back. It talks only to the local servers on your PC (`127.0.0.1`), using a
-random per-machine pairing token. The optional 1point3acres assistant below uses
-the same extension.
+random per-machine pairing token. The extra 1point3acres assistant (below) also
+uses it; its files are listed separately in
+[`chrome_extension/README.md`](chrome_extension/README.md).
 
 > ChatGPT only knows what you send it. Its summaries can be wrong; the repository
 > and its test results stay the source of truth. Regular reports need a scheduler
@@ -64,13 +65,17 @@ interrupted download resumes without repeating finished pages. Output goes to
 `Desktop/WebContent` by default. It respects `robots.txt` and never bypasses
 login walls, paywalls or DRM.
 
-### 3. Optional: a supervised 1point3acres daily assistant
+### 3. Extra feature: a supervised 1point3acres daily assistant
+
+> **Extra, not part of the ChatGPT bridge.** You can ignore it entirely: it never
+> starts unless you run it, and the bridge doesn't use it. Its code, scripts,
+> extension files and tests are listed in
+> [`src/web_content_agent/onepoint3acres/README.md`](src/web_content_agent/onepoint3acres/README.md).
 
 A small Windows desktop app for the daily check-in quiz on 1point3acres, using
 your own signed-in account. A local model proposes an answer with evidence, a
 supervisor approves it, the extension submits **once**, and the website's
-response is recorded. It is separate from the ChatGPT bridge and off unless you
-start it.
+response is recorded.
 
 ## Quick start (ChatGPT bridge)
 
@@ -172,11 +177,11 @@ request sequence, the collector pipeline and the recovery rules are in
 | `src/web_content_agent/mcp/server.py` | MCP server (`wca-mcp`): the 11 tools below |
 | `src/web_content_agent/chatgpt_chrome_bridge.py` | ChatGPT task state, duplicate protection, loopback HTTP API |
 | `src/web_content_agent/chatgpt_pairing.py` | Per-machine pairing tokens for the extension |
-| `chrome_extension/` | Chrome Companion (MV3 service worker) for ChatGPT and the optional quiz lane |
+| `chrome_extension/` | Chrome Companion (MV3 service worker); [file map](chrome_extension/README.md) separates bridge, shared and extra files |
 | `src/web_content_agent/worker.py`, `discovery.py`, `extraction.py`, `lmstudio.py` | Collector pipeline |
 | `src/web_content_agent/cli.py` | `wca` command-line tool for the collector |
-| `src/web_content_agent/onepoint3acres*` | Optional 1point3acres desktop app (`wca-onepoint3acres-app`) |
-| `scripts/` | PowerShell launchers, diagnostics, `test.ps1`, `chatgpt-live-check.py` |
+| `src/web_content_agent/onepoint3acres*` | **Extra:** 1point3acres desktop app (`wca-onepoint3acres-app`); [details](src/web_content_agent/onepoint3acres/README.md) |
+| `scripts/` | Launchers and diagnostics, grouped by feature in [scripts/README.md](scripts/README.md) |
 | `tests/` | Python unit/integration tests and Node tests for the extension |
 
 ### Public interfaces
@@ -200,7 +205,7 @@ request sequence, the collector pipeline and the recovery rules are in
 
 **Loopback HTTP** (used only by the extension; token + extension origin required):
 ChatGPT bridge on `127.0.0.1:18732` (`/command`, `/before-submit`, `/observation`,
-`/event`, `/submitted`, `/complete`); quiz app on `127.0.0.1:18731` (`/command`,
+`/event`, `/submitted`, `/complete`); extra 1point3acres app on `127.0.0.1:18731` (`/command`,
 `/status`, `/run`, `/run-daily`, `/simulate`, `/close`, `/solve`, `/complete`,
 `/review/*`).
 
@@ -220,7 +225,7 @@ $env:PYTEST_ADDOPTS = '-m "not live and not lmstudio"'
 | ChatGPT bridge | Send-once state machine, durable idempotency across restarts, zero-submission retry rules, throttling, mode correction, PDF policy, port ownership, read-only recovery | `tests/unit/test_chatgpt_*.py` |
 | Chrome Companion | Composer readiness, submission confirmation, reply extraction, tab handling, thinking mode, render recovery | `tests/js/chatgpt-*.test.mjs`, `tests/js/tab-load.test.mjs` |
 | Collector | Link selection, extraction fallbacks, images, checkpoints, resume, context budget, model lifecycle, full static/course/resume pipelines | `tests/unit/test_{selection_utils,extraction_fallbacks,image_download,checkpoint_logging_markdown,context_budget,model_lifecycle_scripts,mcp_tools,paths_config}.py`, `tests/integration/` |
-| 1point3acres assistant | Quiz parsing, solver output, model selection, supervision and one-use permits, records, recovery, desktop-app wiring, extension quiz flow | `tests/unit/test_{onepoint3acres_daily,quiz_*}.py`, `tests/js/onepoint3acres-*.test.mjs` |
+| 1point3acres assistant (extra) | Quiz parsing, solver output, model selection, supervision and one-use permits, records, recovery, desktop-app wiring, extension quiz flow | `tests/unit/test_{onepoint3acres_daily,quiz_*}.py`, `tests/js/onepoint3acres-*.test.mjs` |
 | Live (opt-in) | Real LM Studio / website / ChatGPT checks | `-m lmstudio`, `-m live`, `scripts/chatgpt-live-check.py` |
 
 Current totals and the per-file list are in [docs/testing.md](docs/testing.md).

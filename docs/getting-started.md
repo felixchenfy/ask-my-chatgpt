@@ -181,7 +181,9 @@ The workspace defaults to Desktop/WebContent. `WCA_DESKTOP_PATH` overrides its
 Desktop base. Use `strategy="course"` for in-scope course traversal; `max_items`
 is an optional cap. Raw evidence and cleaned output are stored separately.
 
-## Optional 1point3acres desktop app
+## Extra feature: 1point3acres desktop app
+
+Skip this section unless you want this extra; the ChatGPT bridge doesn't need it.
 
 ```powershell
 uv run wca-onepoint3acres-app

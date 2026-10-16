@@ -1,3 +1,8 @@
+"""Extra feature: daily runner for the 1Point3Acres assistant.
+
+Not part of the ChatGPT bridge; see onepoint3acres/README.md.
+"""
+
 from __future__ import annotations
 
 import argparse

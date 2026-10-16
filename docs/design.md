@@ -83,7 +83,10 @@ flowchart LR
     W --> O["Cleaned Markdown and validation"]
 ```
 
-## Optional 1point3acres desktop app
+## Extra feature: 1point3acres desktop app
+
+This extra is not part of the ChatGPT bridge; the bridge never imports or starts it.
+Its files are listed in [its README](../src/web_content_agent/onepoint3acres/README.md).
 
 `wca-onepoint3acres-app` is a Tk window that owns a second loopback server on
 `127.0.0.1:18731`. The same Chrome Companion polls it for commands, reads the
