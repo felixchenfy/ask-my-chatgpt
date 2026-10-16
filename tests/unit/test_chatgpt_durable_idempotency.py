@@ -46,6 +46,34 @@ def test_operation_protection_survives_window(tmp_path, monkeypatch, explicit, o
     assert first.record_path(old).read_bytes() == preserved
 
 
+def test_duplicate_block_carries_original_message_identity(tmp_path):
+    # A caller interrupted after submission re-runs with the same key: it must stay
+    # blocked, but get the original message id for the single bound read.
+    first = module.ChatGptChromeBridge(tmp_path)
+    old = first.start_message("Original question", idempotency_key="operation")
+    first.claim_command()
+    assert first.begin_submission(old)
+    first.mark_submitted(old, "https://chatgpt.com/c/offline", "original-message")
+    second = module.ChatGptChromeBridge(tmp_path)
+    assert second.start_message("Original question", idempotency_key="operation") == ""
+    blocked = second._preflight_result
+    assert blocked["status"] == "duplicate_blocked"
+    assert blocked["message_submitted"] is True
+    assert blocked["submitted_message_id"] == "original-message"
+    assert blocked["conversation_url"] == "https://chatgpt.com/c/offline"
+    assert blocked["original_run_id"] == old
+
+
+def test_duplicate_block_without_readable_record_stays_blocked(tmp_path):
+    first = module.ChatGptChromeBridge(tmp_path)
+    old = first.start_message("Original question", idempotency_key="operation")
+    first.record_path(old).unlink()
+    second = module.ChatGptChromeBridge(tmp_path)
+    assert second.start_message("Original question", idempotency_key="operation") == ""
+    assert second._preflight_result["status"] == "duplicate_blocked"
+    assert second._preflight_result["submitted_message_id"] == ""
+
+
 def test_explicit_key_cannot_silently_change_question(tmp_path):
     bridge = module.ChatGptChromeBridge(tmp_path)
     bridge.start_message("Original", idempotency_key="operation")

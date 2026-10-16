@@ -1,3 +1,12 @@
+# Recovery fix — 2026-10-16
+
+- **`duplicate_blocked` now carries the original message id.** If a caller is
+  interrupted after its message was submitted and re-runs with the same key, the
+  blocked result includes the original run's `submitted_message_id`,
+  `conversation_url` and `message_submitted`, so the single bound read
+  (`read_chatgpt_conversation` with `expected_message_id`) needs no digging in task
+  records. Nothing is submitted again; protection is unchanged.
+
 # Public preparation — 2026-10-15
 
 - **Security:** the optional 1point3acres desktop app no longer uses a fixed

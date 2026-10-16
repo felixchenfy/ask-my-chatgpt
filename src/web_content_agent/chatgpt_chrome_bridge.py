@@ -35,6 +35,7 @@ COMPANION_CLAIM_TIMEOUT_SECONDS = 75.0
 COMPANION_RESULT_GRACE_SECONDS = 30.0
 AUTOMATIC_READ_RECOVERY_TIMEOUT_SECONDS = 600
 SESSION_KEY_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+RUN_ID_PATTERN = re.compile(r"chatgpt-\d{8}-\d{6}-[0-9a-f]{6}")
 ThinkingMode = Literal["current", "prefer_max", "max"]
 
 _OBSERVATION_FIELDS = frozenset(
@@ -611,6 +612,16 @@ class ChatGptChromeBridge:
                 )
             if self._retryable_zero_submission(previous):
                 return None, destination
+            # Carry the original run's message identity so a caller whose first
+            # attempt was interrupted can do the single bound read without
+            # digging through task records. Nothing is submitted again.
+            original: dict[str, Any] = {}
+            original_run_id = previous.get("run_id")
+            if isinstance(original_run_id, str) and RUN_ID_PATTERN.fullmatch(original_run_id):
+                try:
+                    original = self._read_record(original_run_id)
+                except (OSError, ValueError):
+                    original = {}
             return (
                 {
                     "ok": False,
@@ -619,8 +630,13 @@ class ChatGptChromeBridge:
                         "This operation was already started and remains protected; "
                         "it was not submitted again."
                     ),
-                    "message_submitted": bool(previous.get("message_submitted", False)),
-                    "original_run_id": previous.get("run_id"),
+                    "message_submitted": bool(
+                        previous.get("message_submitted", False)
+                        or original.get("message_submitted", False)
+                    ),
+                    "submitted_message_id": str(original.get("submitted_message_id") or ""),
+                    "conversation_url": str(original.get("conversation_url") or destination or ""),
+                    "original_run_id": original_run_id,
                 },
                 destination,
             )
