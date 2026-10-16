@@ -53,13 +53,32 @@ function Copy-MissingFile {
     return $true
 }
 
+function Get-RelativeFile {
+    # Build relative paths from item names, never by trimming FullName: an 8.3 short
+    # root (e.g. C:\Users\RUNNER~1) and long child paths have different lengths.
+    param(
+        [Parameter(Mandatory = $true)][string]$Directory,
+        [string]$Prefix = ""
+    )
+
+    foreach ($item in @(Get-ChildItem -LiteralPath $Directory)) {
+        $relative = if ($Prefix) { Join-Path $Prefix $item.Name } else { $item.Name }
+        if ($item.PSIsContainer) {
+            Get-RelativeFile -Directory $item.FullName -Prefix $relative
+        }
+        else {
+            [pscustomobject]@{ FullName = $item.FullName; Relative = $relative }
+        }
+    }
+}
+
 $versionDirectories = @(Get-ChildItem -LiteralPath $CacheRoot -Directory -ErrorAction Stop)
+$skillFiles = @(Get-RelativeFile -Directory $sourceSkillRoot)
 foreach ($versionDirectory in $versionDirectories) {
     $repaired = New-Object System.Collections.Generic.List[string]
 
-    $skillFiles = @(Get-ChildItem -LiteralPath $sourceSkillRoot -File -Recurse)
     foreach ($sourceFile in $skillFiles) {
-        $relativePath = $sourceFile.FullName.Substring($sourceSkillRoot.Length).TrimStart('\')
+        $relativePath = $sourceFile.Relative
         $destination = Join-Path (Join-Path $versionDirectory.FullName "skills\chatgpt-pdf-review") $relativePath
         if (Copy-MissingFile -Source $sourceFile.FullName -Destination $destination) {
             $repaired.Add("skills\chatgpt-pdf-review\$relativePath")
