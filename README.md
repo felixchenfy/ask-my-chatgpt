@@ -122,6 +122,17 @@ Timeouts, PDFs and troubleshooting are in the [installation guide](docs/getting-
 uv run python scripts/chatgpt-live-check.py --confirm-send
 ```
 
+### Integrations
+
+Two optional clients reuse the same bridge and Chrome Companion; both send real messages:
+
+- [Codex plugin "ChatGPT PDF Review"](integrations/codex-plugin/README.md): a Codex skill plus a
+  small Node MCP server (`ask_chatgpt`, `read_chatgpt_conversation`) with PDF-review guidance.
+- [Claude Code skill `chatgpt-bridge`](integrations/claude-skill/chatgpt-bridge/README.md): a
+  `SKILL.md` and `gpt.py` CLI; link the folder into `~/.claude/skills/`.
+
+Both find this checkout relative to their own folder; `WCA_PROJECT_ROOT` overrides it.
+
 ## Safety and privacy in one minute
 
 - The bridge runs on your PC, but the questions and PDFs you choose **are sent to
@@ -182,6 +193,8 @@ request sequence, the collector pipeline and the recovery rules are in
 | `src/web_content_agent/cli.py` | `wca` command-line tool for the collector |
 | `src/web_content_agent/onepoint3acres*` | **Extra:** 1point3acres desktop app (`wca-onepoint3acres-app`); [details](src/web_content_agent/onepoint3acres/README.md) |
 | `scripts/` | Launchers and diagnostics, grouped by feature in [scripts/README.md](scripts/README.md) |
+| `integrations/codex-plugin/` | Codex plugin: skill, Node MCP adapter, its own `npm test` suite; [README](integrations/codex-plugin/README.md) |
+| `integrations/claude-skill/chatgpt-bridge/` | Claude Code skill (`SKILL.md`, `scripts/gpt.py`); [README](integrations/claude-skill/chatgpt-bridge/README.md) |
 | `tests/` | Python unit/integration tests and Node tests for the extension |
 
 ### Public interfaces
@@ -216,8 +229,11 @@ All offline tests run without a ChatGPT account, LM Studio or network access:
 ```powershell
 $env:PYTHONUTF8 = '1'
 $env:PYTEST_ADDOPTS = '-m "not live and not lmstudio"'
-.\scripts\test.ps1      # ruff format + ruff lint + pytest + node --test
+.\scripts\test.ps1      # ruff format + ruff lint + pytest + node --test (+ plugin npm test/lint)
 ```
+
+The Codex plugin suite runs only when `integrations/codex-plugin/node_modules` exists
+(`npm ci` there first); CI always installs it.
 
 | Area | What is covered | Where |
 | --- | --- | --- |
@@ -226,6 +242,7 @@ $env:PYTEST_ADDOPTS = '-m "not live and not lmstudio"'
 | Chrome Companion | Composer readiness, submission confirmation, reply extraction, tab handling, thinking mode, render recovery | `tests/js/chatgpt-*.test.mjs`, `tests/js/tab-load.test.mjs` |
 | Collector | Link selection, extraction fallbacks, images, checkpoints, resume, context budget, model lifecycle, full static/course/resume pipelines | `tests/unit/test_{selection_utils,extraction_fallbacks,image_download,checkpoint_logging_markdown,context_budget,model_lifecycle_scripts,mcp_tools,paths_config}.py`, `tests/integration/` |
 | 1point3acres assistant (extra) | Quiz parsing, solver output, model selection, supervision and one-use permits, records, recovery, desktop-app wiring, extension quiz flow | `tests/unit/test_{onepoint3acres_daily,quiz_*}.py`, `tests/js/onepoint3acres-*.test.mjs` |
+| Integrations | Codex plugin MCP tools, launcher/agent path resolution, cancellation, cache repair, Companion DOM contracts; Claude skill path resolution | `integrations/codex-plugin/tests/`, `tests/unit/test_claude_skill_paths.py` |
 | Live (opt-in) | Real LM Studio / website / ChatGPT checks | `-m lmstudio`, `-m live`, `scripts/chatgpt-live-check.py` |
 
 Current totals and the per-file list are in [docs/testing.md](docs/testing.md).
@@ -235,7 +252,7 @@ CI runs the same offline checks on `windows-latest` for every push and pull requ
 
 | | Evidence |
 | --- | --- |
-| Offline suite | Windows, 2026-10-15: 481 Python passed, 0 skipped (6 live/model tests deselected); 182/182 JavaScript passed. Run by Windows CI on every push |
+| Offline suite | Windows, 2026-10-15: 484 Python passed, 0 skipped (6 live/model tests deselected); 182/182 Companion JavaScript and 260/260 Codex plugin tests passed, plugin ESLint clean. Run by Windows CI on every push |
 | Live ChatGPT round trip over MCP stdio | `scripts/chatgpt-live-check.py`: passed on Windows, 2026-10-15 (new chat, follow-up in the same chat, read-only read); details in [release notes](docs/release-notes.md) |
 | Codex as the MCP client | Long-running personal use |
 | Claude Code as the MCP client | Standard MCP setup documented; a recorded Claude Code session is still welcome |

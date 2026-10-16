@@ -14,8 +14,11 @@ $env:PYTEST_ADDOPTS = '-m "not live and not lmstudio"'
 ```
 
 `test.ps1` runs, in order: `ruff format --check`, `ruff check`, `pytest`, and
-`node --test tests/js/*.test.mjs` (Node.js 22+). CI runs the same script on
-`windows-latest` for every push and pull request.
+`node --test tests/js/*.test.mjs` (Node.js 22+), then `npm test` and `npm run lint`
+in `integrations/codex-plugin` when its `node_modules` exists (run `npm ci` there
+first; otherwise the plugin step is skipped with a warning). CI installs the plugin
+dependencies and runs the same script on `windows-latest` for every push and pull
+request.
 
 Useful variations:
 
@@ -66,6 +69,16 @@ checkpoint in [release-notes.md](release-notes.md).
 | `test_chatgpt_bridge_ownership.py` | 11 | Exclusive loopback port ownership and admission |
 | `test_chatgpt_project_routes.py` | 10 | ChatGPT project URLs map to one conversation |
 | `test_chatgpt_composer_diagnostic.py` | 3 | Read-only composer diagnostics |
+
+### Integrations
+
+| File | Cases | Covers |
+| --- | ---: | --- |
+| `tests/unit/test_claude_skill_paths.py` | 3 | Claude Code skill `gpt.py` finds the enclosing checkout and the plugin adapter; env overrides win; a copied skill refuses to start the adapter without `WCA_PROJECT_ROOT` |
+| `integrations/codex-plugin/tests/*.test.mjs` | 260 | Codex plugin (`npm test`): MCP tool catalog, `.mcp.json`/launcher routing, WebContentAgent root resolution, cooperative cancellation over a real child process, cache repair, real loopback HTTP bridge fixture, and Companion DOM contracts (submission confirmation, attachments, citations, prompt boundaries, render lease) in an offline Chromium |
+
+Counts measured on Windows, 2026-10-15 (484 Python passed with 6 live/model tests
+deselected; 182 Companion and 260 plugin Node tests passed).
 
 ### Chrome Companion (JavaScript, `tests/js/`)
 

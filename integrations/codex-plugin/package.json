@@ -1,0 +1,27 @@
+{
+  "name": "chatgpt-pdf-review",
+  "version": "0.1.0",
+  "description": "Codex skill and local-agent route for asking signed-in ChatGPT with optional PDF attachments",
+  "main": "server.mjs",
+  "scripts": {
+    "test": "node --test --test-concurrency=1",
+    "validate:plugin": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/validate-plugin.ps1",
+    "update:plugin": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/update-installed-plugin.ps1",
+    "test:unit": "node --test --test-concurrency=1 tests/paths.test.mjs tests/store.test.mjs tests/agent-config.test.mjs tests/agent-process.test.mjs",
+    "lint": "eslint ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.0",
+    "playwright": "^1.62.1"
+  },
+  "private": true
+}

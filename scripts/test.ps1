@@ -13,4 +13,18 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Pytest failed with exit code $LASTEXITCODE" }
     & node --test tests/js/*.test.mjs
     if ($LASTEXITCODE -ne 0) { throw "Chrome companion tests failed with exit code $LASTEXITCODE" }
+    # Codex plugin integration: run its Node tests and ESLint when its dependencies are
+    # installed (`npm ci` in integrations/codex-plugin; CI always installs them).
+    $PluginRoot = Join-Path $ProjectRoot 'integrations\codex-plugin'
+    if (Test-Path -LiteralPath (Join-Path $PluginRoot 'node_modules') -PathType Container) {
+        Push-Location $PluginRoot
+        try {
+            & npm.cmd test
+            if ($LASTEXITCODE -ne 0) { throw "Codex plugin tests failed with exit code $LASTEXITCODE" }
+            & npm.cmd run lint
+            if ($LASTEXITCODE -ne 0) { throw "Codex plugin lint failed with exit code $LASTEXITCODE" }
+        } finally { Pop-Location }
+    } else {
+        Write-Warning "Skipping Codex plugin tests: run 'npm ci' in integrations\codex-plugin first."
+    }
 } finally { Pop-Location }

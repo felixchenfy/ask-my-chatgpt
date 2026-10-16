@@ -1,0 +1,10 @@
+node_modules/
+playwright-report/
+test-results/
+*.log
+.env
+output/
+tmp/
+
+# Optional private skill preferences (may contain conversation URLs); never commit.
+skills/chatgpt-pdf-review/references/user-preferences.md

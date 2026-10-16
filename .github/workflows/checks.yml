@@ -16,4 +16,9 @@ jobs:
           node-version: '22'
       - run: uv sync --python 3.12 --frozen
       - run: uv run playwright install chromium
+      - name: Install Codex plugin dependencies
+        working-directory: integrations/codex-plugin
+        run: |
+          npm ci
+          npx playwright install chromium
       - run: ./scripts/test.ps1

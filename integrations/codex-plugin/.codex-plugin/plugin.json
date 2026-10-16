@@ -1,0 +1,26 @@
+{
+  "name": "chatgpt-pdf-review",
+  "version": "0.1.0+codex.20261005.upload83",
+  "description": "Ask signed-in ChatGPT through the WebContentAgent local Chrome companion, with optional PDF attachments.",
+  "author": {
+    "name": "Felix"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ChatGPT PDF Review",
+    "shortDescription": "Ask signed-in ChatGPT through a local agent.",
+    "longDescription": "Uses WebContentAgent and its Chrome Companion to reuse a tracked ChatGPT session, send one deduplicated question with an optional allowed local PDF through the user's normal signed-in page, preserve the current thinking mode by default, return the complete response and canonical URL, and automatically recover an unverified existing response once without sending again.",
+    "developerName": "Felix",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Ask ChatGPT for a second opinion and bring the answer back.",
+      "Send this PDF to ChatGPT for a critical review.",
+      "Send this PDF to ChatGPT, wait for the review, and bring the response back."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}
