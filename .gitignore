@@ -31,3 +31,4 @@ docs/*
 !docs/workflows.md
 !docs/roadmap.md
 !docs/repository-guide.md
+!docs/testing.md

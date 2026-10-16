@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -124,6 +125,7 @@ def test_status_and_redacted_failure_summary(desktop: Path) -> None:
     handoff["new_chat_prompt"].encode("cp1252")
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows-only: uses .venv/Scripts/python.exe")
 def test_lmstudio_config_merge_preserves_other_servers(tmp_path: Path) -> None:
     config = tmp_path / "mcp.json"
     config.write_text(
@@ -138,6 +140,7 @@ def test_lmstudio_config_merge_preserves_other_servers(tmp_path: Path) -> None:
     assert SERVER_NAME not in disabled["mcpServers"]
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows-only: uses .venv/Scripts/python.exe")
 def test_bionic_config_merge_preserves_other_servers(tmp_path: Path) -> None:
     config = tmp_path / "ng-mcp.json"
     config.write_text(

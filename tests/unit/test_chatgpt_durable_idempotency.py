@@ -2,6 +2,7 @@
 
 import errno
 import json
+import re
 from datetime import timedelta
 
 import pytest
@@ -79,11 +80,25 @@ def test_pairing_preparation_preserves_optional_quiz_lane(tmp_path):
     prepare_pairing(tmp_path)
     assert not (tmp_path / "chrome_extension/quiz-pairing.js").exists()
     quiz_state = tmp_path / "runtime/state/quiz-pairing.json"
-    quiz_state.write_text(json.dumps({"token": "offline-quiz-fixture"}), encoding="utf-8")
+    quiz_token = "c0" * 32
+    quiz_state.write_text(json.dumps({"token": quiz_token}), encoding="utf-8")
     original = (tmp_path / "runtime/state/chatgpt-pairing.json").read_bytes()
     prepare_pairing(tmp_path)
-    assert "offline-quiz-fixture" in (tmp_path / "chrome_extension/quiz-pairing.js").read_text()
+    assert quiz_token in (tmp_path / "chrome_extension/quiz-pairing.js").read_text()
     assert (tmp_path / "runtime/state/chatgpt-pairing.json").read_bytes() == original
+
+
+def test_quiz_pairing_replaces_fixed_or_malformed_tokens(tmp_path):
+    from web_content_agent.chatgpt_pairing import prepare_quiz_pairing
+
+    quiz_state = tmp_path / "runtime/state/quiz-pairing.json"
+    quiz_state.parent.mkdir(parents=True)
+    quiz_state.write_text(json.dumps({"token": "fixed-shared-token"}), encoding="utf-8")
+    token = prepare_quiz_pairing(tmp_path)
+    assert re.fullmatch(r"[0-9a-f]{64}", token)
+    assert json.loads(quiz_state.read_text(encoding="utf-8"))["token"] == token
+    assert token in (tmp_path / "chrome_extension/quiz-pairing.js").read_text()
+    assert prepare_quiz_pairing(tmp_path) == token  # stable once valid
 
 
 @pytest.mark.parametrize("read_only", [False, True])

@@ -22,7 +22,6 @@ from web_content_agent.config import ModelConfig
 from web_content_agent.lmstudio import LMStudioClient, ModelOutputInvalid
 from web_content_agent.onepoint3acres import chrome_bridge as chrome_bridge_module
 from web_content_agent.onepoint3acres.chrome_bridge import (
-    BRIDGE_TOKEN,
     MIN_AUTO_ANSWER_CONFIDENCE,
     BridgeServer,
     ChromeBridge,
@@ -40,6 +39,8 @@ from web_content_agent.onepoint3acres.scheduler import DailyScheduleLedger
 from web_content_agent.onepoint3acres.site import analyze_home_controls, parse_quiz_html
 from web_content_agent.onepoint3acres.solver import QuizSolver
 from web_content_agent.onepoint3acres.workflow import DailyAssistantWorkflow, WorkflowOptions
+
+TEST_QUIZ_BRIDGE_TOKEN = "ab" * 32  # matches tests/conftest.py
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "onepoint3acres"
 TEST_EXTENSION_VERSION = "0.4.86"
@@ -700,7 +701,7 @@ def test_bridge_background_endpoints_return_status_logs_and_accept_a_run(
         port = server.server_address[1]
         request = Request(
             f"http://127.0.0.1:{port}/status?log_limit=1",
-            headers={"X-WCA-Token": BRIDGE_TOKEN},
+            headers={"X-WCA-Token": TEST_QUIZ_BRIDGE_TOKEN},
         )
         with urlopen(request, timeout=3) as response:  # noqa: S310
             payload = json.loads(response.read().decode("utf-8"))
@@ -713,7 +714,7 @@ def test_bridge_background_endpoints_return_status_logs_and_accept_a_run(
             f"http://127.0.0.1:{port}/command?"
             f"extension_version={TEST_EXTENSION_VERSION}&"
             f"protocol_version={COMPANION_PROTOCOL_VERSION}&worker_instance_id=http-test",
-            headers={"X-WCA-Token": BRIDGE_TOKEN},
+            headers={"X-WCA-Token": TEST_QUIZ_BRIDGE_TOKEN},
         )
         with urlopen(command_request, timeout=3) as response:  # noqa: S310
             command_payload = json.loads(response.read().decode("utf-8"))
@@ -726,7 +727,7 @@ def test_bridge_background_endpoints_return_status_logs_and_accept_a_run(
             data=b"{}",
             headers={
                 "Content-Type": "application/json",
-                "X-WCA-Token": BRIDGE_TOKEN,
+                "X-WCA-Token": TEST_QUIZ_BRIDGE_TOKEN,
             },
             method="POST",
         )
@@ -1137,7 +1138,7 @@ def test_simulation_http_requires_auth_validates_input_and_reports_busy(monkeypa
     try:
         with httpx.Client(base_url=f"http://127.0.0.1:{server.server_address[1]}") as client:
             assert client.post("/simulate", json=payload).status_code == 403
-            client.headers["X-WCA-Token"] = BRIDGE_TOKEN
+            client.headers["X-WCA-Token"] = TEST_QUIZ_BRIDGE_TOKEN
             assert client.post("/simulate", json={}).status_code == 400
             assert client.post("/simulate", json={**payload, "choices": [1, 2]}).status_code == 400
             assert (

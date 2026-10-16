@@ -12,11 +12,13 @@ import httpx
 import pytest
 
 from web_content_agent.onepoint3acres import chrome_bridge as module
-from web_content_agent.onepoint3acres.chrome_bridge import BRIDGE_TOKEN, BridgeServer
+from web_content_agent.onepoint3acres.chrome_bridge import BridgeServer
 from web_content_agent.onepoint3acres.journal import QuizJournal
 from web_content_agent.onepoint3acres.models import QuizAnswer
 from web_content_agent.onepoint3acres.scheduler import DailyScheduleLedger
 from web_content_agent.onepoint3acres.supervision import SupervisedChromeBridge
+
+TEST_QUIZ_BRIDGE_TOKEN = "ab" * 32  # matches tests/conftest.py
 
 QUIZ = {"question": "测试题？", "choices": ["选项一", "选项二"]}
 
@@ -368,7 +370,7 @@ def api(bridge, monkeypatch):
     try:
         with httpx.Client(
             base_url=f"http://127.0.0.1:{server.server_port}",
-            headers={"X-WCA-Token": BRIDGE_TOKEN},
+            headers={"X-WCA-Token": TEST_QUIZ_BRIDGE_TOKEN},
             trust_env=False,
         ) as client:
             yield client

@@ -25,6 +25,48 @@ def load_pairing_token(root: Path | None = None) -> str:
     return token
 
 
+def _write_extension_asset(asset: Path, global_name: str, token: str) -> None:
+    asset.parent.mkdir(parents=True, exist_ok=True)
+    temporary = asset.with_suffix(".js.tmp")
+    temporary.write_text(
+        "// Generated local pairing. Never commit or share.\nself."
+        + global_name
+        + " = "
+        + json.dumps({"token": token})
+        + ";\n",
+        encoding="utf-8",
+    )
+    temporary.replace(asset)
+
+
+def prepare_quiz_pairing(root: Path | None = None) -> str:
+    """Return the per-install token for the optional 1point3acres desktop app.
+
+    A missing or malformed token (including the fixed token used by early
+    private builds) is replaced with a fresh random
+    one, and the matching extension asset is regenerated. Reload the extension
+    after a replacement so its requests carry the new token.
+    """
+    root = root or project_root()
+    path = root / "runtime" / "state" / "quiz-pairing.json"
+    token = ""
+    try:
+        token = json.loads(path.read_text(encoding="utf-8"))["token"]
+    except (OSError, KeyError, TypeError, ValueError):
+        token = ""
+    asset = root / "chrome_extension" / "quiz-pairing.js"
+    valid = isinstance(token, str) and re.fullmatch(r"[0-9a-f]{64}", token) is not None
+    if not valid:
+        token = secrets.token_hex(32)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(".json.tmp")
+        temporary.write_text(json.dumps({"token": token}), encoding="utf-8")
+        temporary.replace(path)
+    if not valid or not asset.is_file() or token not in asset.read_text(encoding="utf-8"):
+        _write_extension_asset(asset, "QuizPairing", token)
+    return token
+
+
 def prepare_pairing(root: Path | None = None) -> None:
     root = root or project_root()
     path = root / "runtime" / "state" / "chatgpt-pairing.json"
@@ -37,32 +79,12 @@ def prepare_pairing(root: Path | None = None) -> None:
         except FileExistsError:
             pass
     token = load_pairing_token(root)
-    asset = root / "chrome_extension" / "chatgpt-pairing.js"
-    asset.parent.mkdir(parents=True, exist_ok=True)
-    temporary = asset.with_suffix(".js.tmp")
-    temporary.write_text(
-        "// Generated local pairing. Never commit or share.\nself.ChatGptPairing = "
-        + json.dumps({"token": token})
-        + ";\n",
-        encoding="utf-8",
+    _write_extension_asset(
+        root / "chrome_extension" / "chatgpt-pairing.js", "ChatGptPairing", token
     )
-    temporary.replace(asset)
-    # Preserve an independently paired optional quiz lane without embedding its
-    # local token in the shared worker. Absence does not prevent AskGPT startup.
-    quiz_path = root / "runtime" / "state" / "quiz-pairing.json"
-    if quiz_path.is_file():
-        quiz_token = json.loads(quiz_path.read_text(encoding="utf-8"))["token"]
-        if not isinstance(quiz_token, str) or not quiz_token:
-            raise ValueError("Invalid optional quiz pairing")
-        quiz_asset = root / "chrome_extension" / "quiz-pairing.js"
-        quiz_temporary = quiz_asset.with_suffix(".js.tmp")
-        quiz_temporary.write_text(
-            "// Generated local pairing. Never commit or share.\nself.QuizPairing = "
-            + json.dumps({"token": quiz_token})
-            + ";\n",
-            encoding="utf-8",
-        )
-        quiz_temporary.replace(quiz_asset)
+    # The optional 1point3acres lane is paired only once its desktop app has run.
+    if (root / "runtime" / "state" / "quiz-pairing.json").is_file():
+        prepare_quiz_pairing(root)
 
 
 if __name__ == "__main__":

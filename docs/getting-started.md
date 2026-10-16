@@ -27,9 +27,10 @@ uv sync --python 3.12 --frozen
 uv run python -m web_content_agent.chatgpt_pairing
 ```
 
-The repository is currently private, so GitHub access is required. Pairing creates
-an ignored local secret and generated extension asset; it does not sign in to
-ChatGPT. Do not share these files or copy another person's pairing.
+Pairing creates a random per-machine token (`runtime/state/chatgpt-pairing.json`)
+and a generated extension file (`chrome_extension/chatgpt-pairing.js`). Both are
+ignored by Git. Pairing does not sign in to ChatGPT. Do not share these files or
+copy another person's pairing. Re-running the command keeps an existing token.
 
 In Chrome, open `chrome://extensions`, enable **Developer mode**, choose **Load
 unpacked**, and select this checkout's `chrome_extension` directory. Open ChatGPT
@@ -180,12 +181,42 @@ The workspace defaults to Desktop/WebContent. `WCA_DESKTOP_PATH` overrides its
 Desktop base. Use `strategy="course"` for in-scope course traversal; `max_items`
 is an optional cap. Raw evidence and cleaned output are stored separately.
 
+## Optional 1point3acres desktop app
+
+```powershell
+uv run wca-onepoint3acres-app
+```
+
+This opens a small Tk window. It needs LM Studio with a local model (chosen in
+the app) and the same Chrome Companion. On first start it creates its own random
+token in `runtime/state/quiz-pairing.json` and regenerates
+`chrome_extension/quiz-pairing.js`; **reload the extension** in
+`chrome://extensions` afterwards. Builds before October 2026 used a fixed token;
+it is replaced automatically, so reload the extension once after updating.
+
+The app proposes an answer, waits for supervisor approval, submits once and
+records the website's verdict. Use it only with your own account and within the
+site's rules.
+
+## Verify the bridge end to end
+
+After the extension is loaded and ChatGPT is signed in, this sends two short
+synthetic messages through the real MCP server and reads the reply back:
+
+```powershell
+uv run python scripts/chatgpt-live-check.py --confirm-send
+```
+
+It prints one JSON line per step and stops at the first failure without
+resending. See [testing](testing.md) for the offline suite.
+
 ## Troubleshooting
 
 | Symptom | What to check |
 | --- | --- |
 | MCP tools are missing | Absolute paths, client PATH, `uv sync`, client reconnect and MCP startup logs |
-| Extension is disconnected | Correct unpacked-extension folder, local pairing preparation and enabled extension |
+| Extension is disconnected | Correct unpacked-extension folder, `uv run python -m web_content_agent.chatgpt_pairing`, then reload the extension |
+| Quiz app gets `403 forbidden` | The app rotated its token; reload the extension in `chrome://extensions` |
 | PDF policy/file rejected | The server's policy environment, allowed real directory, file type and size |
 | Bridge is busy | Another client may own the listener; serialize work and let that owner finish |
 | Existing draft or attachment blocks sending | Inspect it yourself; do not let a retry erase unrelated work |

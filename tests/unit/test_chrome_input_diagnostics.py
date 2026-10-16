@@ -7,7 +7,9 @@ from pathlib import Path
 import httpx
 import pytest
 
-from web_content_agent.onepoint3acres.chrome_bridge import BRIDGE_TOKEN, BridgeServer
+from web_content_agent.onepoint3acres.chrome_bridge import BridgeServer
+
+TEST_QUIZ_BRIDGE_TOKEN = "ab" * 32  # matches tests/conftest.py
 
 spec = importlib.util.spec_from_file_location(
     "chrome_input_diagnostics",
@@ -34,7 +36,7 @@ def diagnostic_server(monkeypatch):
 
 def test_diagnostic_cannot_dispatch_a_forum_run(diagnostic_server):
     client, bridge = diagnostic_server
-    headers = {"X-WCA-Token": BRIDGE_TOKEN}
+    headers = {"X-WCA-Token": TEST_QUIZ_BRIDGE_TOKEN}
     for route in ["/run", "/run-daily", "/solve", "/review/prepare", "/review/permit", "/complete"]:
         assert client.post(route, json={}, headers=headers).status_code == 404
     assert bridge.status()["run_id"] is None
@@ -48,7 +50,7 @@ def test_fixture_is_inert_and_has_no_readable_runtime_files(diagnostic_server):
     assert "form-action 'none'" in response.headers["content-security-policy"]
     assert "default-src 'none'" in response.headers["content-security-policy"]
     assert "trustedSubmissions" in response.text
-    assert BRIDGE_TOKEN not in response.text
+    assert TEST_QUIZ_BRIDGE_TOKEN not in response.text
     assert client.get("/diagnostics/state.json").status_code == 404
 
 
@@ -69,7 +71,7 @@ def test_diagnostic_claim_is_version_gated_and_not_repeated():
 
 def test_diagnostic_result_needs_auth_and_matching_id(diagnostic_server):
     client, bridge = diagnostic_server
-    headers = {"X-WCA-Token": BRIDGE_TOKEN}
+    headers = {"X-WCA-Token": TEST_QUIZ_BRIDGE_TOKEN}
     body = {"diagnostic_id": bridge.diagnostic_id, "ok": True, "cases": []}
     assert client.post("/diagnostics/input-result", json=body).status_code == 403
     assert (
@@ -80,5 +82,6 @@ def test_diagnostic_result_needs_auth_and_matching_id(diagnostic_server):
     )
     assert not bridge.finished.is_set()
     assert client.post("/diagnostics/input-result", json=body, headers=headers).status_code == 200
-    assert bridge.finished.is_set()
+    # The handler replies before setting the event; wait instead of racing it.
+    assert bridge.finished.wait(2)
     assert client.post("/diagnostics/input-result", json=body, headers=headers).status_code == 409

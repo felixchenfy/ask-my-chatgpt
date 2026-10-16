@@ -11,6 +11,11 @@ its declared Chrome permissions. Its debugger permission supports native input,
 file staging and bounded rendering recovery. It is powerful; inspect the source
 and manifest before installing. Do not distribute generated pairing files.
 
+Both loopback servers (ChatGPT bridge `127.0.0.1:18732`, quiz app
+`127.0.0.1:18731`) require a random per-machine token and reject requests
+whose `Origin` is not a Chrome extension, so ordinary web pages cannot drive
+them. Tokens live in ignored files under `runtime/state/`.
+
 The bridge sends chosen prompts/PDFs to the signed-in ChatGPT service. It does
 not make these uploads offline. Local extraction uses localhost LM Studio.
 The project does not export browser cookies or copy account credentials.

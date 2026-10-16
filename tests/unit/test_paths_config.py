@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from subprocess import CompletedProcess
 
@@ -13,6 +14,7 @@ def test_desktop_override(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> No
     assert get_desktop_path() == tmp_path.resolve()
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows-only: Windows Desktop folder")
 def test_windows_desktop_resolves_to_existing_path() -> None:
     assert get_desktop_path().is_dir()
 

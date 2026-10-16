@@ -2,8 +2,7 @@
 
 Contributions are welcome: fixes, documentation, setup reports, synthetic browser
 fixtures, accessibility improvements and well-scoped feature proposals all help.
-The repository is currently private; participation requires access until public
-release. Maintained by [Feiyu Chen](https://github.com/felixchenfy).
+Maintained by [Feiyu Chen](https://github.com/felixchenfy).
 
 ## Find a useful first contribution
 
@@ -19,7 +18,7 @@ ordinary questions and bugs; follow [SECURITY.md](SECURITY.md) for vulnerabiliti
 
 ## Set up and validate
 
-Fork the repository when access permits, or use a branch if you are a collaborator.
+Fork the repository, or use a branch if you are a collaborator.
 Clone your fork, create a descriptive branch, and run:
 
 ```powershell
@@ -34,6 +33,7 @@ Use Python 3.12 and Node.js 22 or later. The script checks Ruff formatting/lint,
 Python tests and JavaScript tests. Offline tests should work without personal
 configuration, a ChatGPT account or a loaded LM Studio model. Live tests are
 separate and must not run in CI or send messages without authorization.
+See the [testing guide](docs/testing.md) for the inventory and conventions.
 
 ## Submit a focused pull request
 

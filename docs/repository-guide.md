@@ -20,8 +20,9 @@ template asks for purpose and checks. SECURITY and community guidelines provide
 reporting paths without publishing the maintainer's private contact details.
 
 The README does not claim Claude Code live acceptance, an installed scheduler,
-perfect conversation memory or current PDF benchmarks. Public presentation is
-prepared now; repository visibility remains private until explicitly changed.
+perfect conversation memory or current PDF benchmarks. It is ordered from simple
+to detailed: what the tools do and a quick start first, then architecture,
+public interfaces and the test inventory for developers.
 
 ## Sources and how they informed this layout
 

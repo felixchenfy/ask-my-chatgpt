@@ -9,7 +9,7 @@ from datetime import datetime
 
 import httpx
 
-from web_content_agent.onepoint3acres.chrome_bridge import BRIDGE_TOKEN
+from web_content_agent.onepoint3acres.chrome_bridge import bridge_token
 from web_content_agent.paths import project_root
 
 
@@ -38,7 +38,7 @@ def main() -> None:
         payload["web_evidence"] = []
     start = time.monotonic()
     with httpx.Client(
-        base_url="http://127.0.0.1:18731", headers={"X-WCA-Token": BRIDGE_TOKEN}, timeout=10
+        base_url="http://127.0.0.1:18731", headers={"X-WCA-Token": bridge_token()}, timeout=10
     ) as client:
         before = client.get("/status?log_limit=80")
         before.raise_for_status()

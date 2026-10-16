@@ -11,13 +11,13 @@ from pathlib import Path
 
 import httpx
 
-from web_content_agent.onepoint3acres.chrome_bridge import BRIDGE_PORT, BRIDGE_TOKEN
+from web_content_agent.onepoint3acres.chrome_bridge import BRIDGE_PORT, bridge_token
 from web_content_agent.onepoint3acres.supervision import review_token_path
 from web_content_agent.paths import default_workspace_root, project_root
 
 
 def request(path: str, payload: dict | None = None) -> dict:
-    headers = {"X-WCA-Token": BRIDGE_TOKEN}
+    headers = {"X-WCA-Token": bridge_token()}
     if path == "/review/decision":
         headers["X-WCA-Review-Token"] = review_token_path().read_text(encoding="utf-8").strip()
     with httpx.Client(

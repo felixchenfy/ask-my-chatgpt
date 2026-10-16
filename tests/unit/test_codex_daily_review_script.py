@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 import httpx
+import pytest
 
 SCRIPT = Path(__file__).parents[2] / "scripts/codex-daily-review.py"
 SPEC = importlib.util.spec_from_file_location("codex_daily_review_script", SCRIPT)
@@ -12,6 +14,7 @@ MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows-only: Windows launcher flags")
 def test_ensure_app_restarts_after_connection_reset(monkeypatch, tmp_path):
     launcher = tmp_path / ".venv/Scripts/wca-onepoint3acres-app.exe"
     launcher.parent.mkdir(parents=True)

@@ -83,6 +83,50 @@ flowchart LR
     W --> O["Cleaned Markdown and validation"]
 ```
 
+## Optional 1point3acres desktop app
+
+`wca-onepoint3acres-app` is a Tk window that owns a second loopback server on
+`127.0.0.1:18731`. The same Chrome Companion polls it for commands, reads the
+quiz page, and asks the app to solve. A local LM Studio model proposes an answer
+with confidence and evidence; `supervision.py` holds it for review and issues a
+one-use submission permit; the extension revalidates the page, submits once and
+reports the website's verdict, which is journaled.
+
+```mermaid
+sequenceDiagram
+    participant A as Desktop app (Python)
+    participant X as Chrome Companion
+    participant S as 1point3acres page
+    participant L as LM Studio (local)
+    participant R as Supervisor
+    A->>A: Queue daily run
+    X->>A: Poll /command
+    A-->>X: Run with run_id
+    X->>S: Read quiz and options
+    X->>A: /solve (question, options, evidence)
+    A->>L: Ask for answer and confidence
+    A->>R: Hold for review
+    R->>A: Approve (separate review token)
+    X->>A: /review/permit (one use)
+    X->>S: Revalidate page and submit once
+    X->>A: /complete with website verdict
+```
+
+## Local authentication
+
+Both loopback servers bind `127.0.0.1` only. Each requires an `X-WCA-Token`
+header whose value is a random per-machine token created by
+`chatgpt_pairing.py` and mirrored into an ignored extension file, and each rejects
+requests whose `Origin` is not `chrome-extension://…`; CORS responses are only
+issued to extension origins. Review decisions on the quiz server need a second,
+separate review token. Tokens are never logged or returned by any endpoint.
+
+## Tests
+
+[testing.md](testing.md) lists the offline tests per module and the opt-in live
+checks, including `scripts/chatgpt-live-check.py`, which drives the real MCP stdio
+server through a new chat, a follow-up and a read-only read.
+
 For the development story, see the
 [bridge architecture and failure analysis](https://feiyuchen-blog.pages.dev/blog/codex-talks-to-chatgpt-through-a-local-agent/)
 and [local extraction article](https://feiyuchen-blog.pages.dev/blog/local-llm-web-agent/).

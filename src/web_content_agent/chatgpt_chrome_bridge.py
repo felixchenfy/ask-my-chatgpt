@@ -295,15 +295,20 @@ class ChatGptChromeBridge:
         self.state_root.mkdir(parents=True, exist_ok=True)
         lock_path = self.state_root / "bridge-state.lock"
         with lock_path.open("a+b") as lock_file:
+            # Cross-process lock: duplicate-send protection must hold even when
+            # two MCP server processes share one state directory.
             if os.name == "nt":
                 import msvcrt
 
-                lock_file.seek(0)
-                if lock_file.tell() == 0:
+                if lock_file.seek(0, os.SEEK_END) == 0:
                     lock_file.write(b"0")
                     lock_file.flush()
                 lock_file.seek(0)
                 msvcrt.locking(lock_file.fileno(), msvcrt.LK_LOCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
             try:
                 if self.shared_state_path.is_file():
                     state = json.loads(self.shared_state_path.read_text(encoding="utf-8"))
@@ -319,6 +324,8 @@ class ChatGptChromeBridge:
                 if os.name == "nt":
                     lock_file.seek(0)
                     msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
 
     def _request_key(
         self,

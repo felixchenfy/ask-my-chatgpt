@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
+from web_content_agent.chatgpt_pairing import prepare_quiz_pairing
 from web_content_agent.chrome_companion import (
     COMPANION_PROTOCOL_VERSION,
     negotiate_companion,
@@ -22,7 +23,14 @@ from .models import DailyQuiz, QuizChoice
 
 BRIDGE_HOST = "127.0.0.1"
 BRIDGE_PORT = 18731
-BRIDGE_TOKEN = "wca-1p3a-local-7d416dfbb8964e37b0f809e8"
+_EXTENSION_ORIGIN = re.compile(r"chrome-extension://[a-p]{32}")
+
+
+def bridge_token() -> str:
+    """Per-install token shared with the paired Chrome Companion (never hard-coded)."""
+    return prepare_quiz_pairing()
+
+
 MIN_AUTO_ANSWER_CONFIDENCE = 0.90
 
 
@@ -528,8 +536,10 @@ class BridgeServer(ThreadingHTTPServer):
         request_simulation: Callable[[dict[str, Any]], bool] | None = None,
         request_daily_run: Callable[[], bool] | None = None,
         request_close: Callable[[], bool] | None = None,
+        token: str | None = None,
     ) -> None:
         self.bridge = bridge
+        self.token = token or bridge_token()
         self.read_logs = read_logs or (lambda _limit: [])
         self.request_run = request_run
         self.request_simulation = request_simulation
@@ -548,7 +558,11 @@ class BridgeHandler(BaseHTTPRequestHandler):
         return
 
     def _cors(self) -> None:
-        self.send_header("Access-Control-Allow-Origin", "*")
+        # Only the unpacked Companion may read responses; ordinary web pages may not.
+        origin = self.headers.get("Origin", "")
+        if _EXTENSION_ORIGIN.fullmatch(origin):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, X-WCA-Token")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 
@@ -562,7 +576,10 @@ class BridgeHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _authorized(self) -> bool:
-        return secrets.compare_digest(self.headers.get("X-WCA-Token", ""), BRIDGE_TOKEN)
+        origin = self.headers.get("Origin", "")
+        if origin and not _EXTENSION_ORIGIN.fullmatch(origin):
+            return False
+        return secrets.compare_digest(self.headers.get("X-WCA-Token", ""), self.server.token)
 
     def _body(self) -> dict[str, Any]:
         length = min(int(self.headers.get("Content-Length", "0")), 65536)
@@ -572,6 +589,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
         return value
 
     def do_OPTIONS(self) -> None:  # noqa: N802
+        if not _EXTENSION_ORIGIN.fullmatch(self.headers.get("Origin", "")):
+            self._json(403, {"error": "forbidden origin"})
+            return
         self.send_response(204)
         self._cors()
         self.end_headers()
