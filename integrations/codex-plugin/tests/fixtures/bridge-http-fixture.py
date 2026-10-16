@@ -19,7 +19,8 @@ with tempfile.TemporaryDirectory(prefix="bridge-contract-") as directory:
     if scenario.startswith("accessible-pdf-resume") or scenario == "accessible-pdf-upload":
         pdf = Path(directory) / "review.pdf"
         pdf.write_bytes(b"%PDF-1.4\nOffline attachment fixture\n")
-        bridge_module._attachment_policy = lambda: ([Path(directory)], 1024)
+        # Resolve like the production policy does: CI temp dirs can be 8.3 short paths.
+        bridge_module._attachment_policy = lambda: ([Path(directory).resolve()], 1024)
         attachment = str(pdf)
     if scenario.startswith("accessible-pdf-resume"):
         parent = bridge.start_message(
